@@ -1,19 +1,35 @@
 <?php
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
+Route::get('/login', function () {
+    return view('auth.login');  // your login blade file
+})->name('login');
 
-Route::get('/', fn() => view('welcome'));
+Route::post('/login', function (Request $request) {
+    $credentials = $request->only('email', 'password');
 
-// Show login form
-Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
 
-// Handle login form POST
-Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+        // (Optional) Add Sanctum token logic here
 
-// Protected routes - require authentication
-Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
+        return redirect()->intended('/dashboard');
+    }
 
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    return back()->withErrors([
+        'email' => 'The provided credentials do not match our records.',
+    ])->withInput();
+});
+
+Route::get('/dashboard', function () {
+    return 'Welcome, ' . auth()->user()->name;
+})->middleware('auth');
+
+Route::post('/logout', function (Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect('/login');
 });

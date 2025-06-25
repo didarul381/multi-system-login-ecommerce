@@ -8,7 +8,6 @@ This is a Laravel-based authentication app designed to demonstrate cross-domain 
 - Composer
 - Laravel 11
 - MySQL
-- Node.js (for frontend assets if needed)
 
 ## 🛠 Setup Instructions
 

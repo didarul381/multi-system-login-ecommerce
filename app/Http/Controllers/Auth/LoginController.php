@@ -8,33 +8,23 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    // Show the login form page
     public function showLogin()
     {
-        return view('auth.login'); // create this Blade view
+        return view('login');
     }
 
-    // Handle login form submission
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $credentials = $request->only('email', 'password');
 
-        if (!Auth::attempt($credentials)) {
-            return back()->withErrors(['email' => 'Invalid credentials'])->withInput();
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect('/dashboard');
         }
 
-        $request->session()->regenerate();
-
-        // Optional: create or update Sanctum token if you want API token support
-        // $token = Auth::user()->createToken('shared-token')->plainTextToken;
-
-        return redirect()->intended('/dashboard');
+        return back()->withErrors(['email' => 'Invalid credentials']);
     }
 
-    // Logout user
     public function logout(Request $request)
     {
         Auth::logout();
